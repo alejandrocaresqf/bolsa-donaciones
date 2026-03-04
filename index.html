@@ -3,80 +3,91 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bolsa de Donación / Préstamo de Medicamentos</title>
+  <title>Avisos de donación/préstamo de medicamentos del Servicio de Salud Ñuble</title>
 
-  <!-- Tabulator (tabla con filtros) -->
+  <!-- Tabulator -->
   <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
 
-  <!-- SheetJS (leer Excel) -->
+  <!-- SheetJS -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
     :root{
-      --bg:#07101d;
-      --card:#0f1b31;
-      --card2:#0c1528;
-      --text:#eaf0ff;
-      --muted:#b7c0da;
-      --border:#223152;
+      --bg:#eef3f8;
+      --card:#ffffff;
+      --text:#0b1f33;
+      --muted:#52606d;
+      --border:#d6e1ec;
 
-      --primary:#005aa7;      /* azul institucional */
-      --primary2:#00a3ad;     /* acento */
-      --ok:#3ddc97;
-      --warn:#ffd166;
-      --bad:#ff5c7a;
+      --primary:#005aa7;     /* azul SSÑ */
+      --primary2:#0b7dbb;    /* azul claro */
+      --accent:#00a3ad;
 
-      --shadow: 0 14px 30px rgba(0,0,0,0.22);
+      --ok:#1aa36f;
+      --warn:#c98c10;
+      --bad:#d6455d;
+
+      --shadow: 0 12px 28px rgba(14, 35, 61, 0.10);
     }
 
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: radial-gradient(1200px 600px at 10% 0%, rgba(0,90,167,0.18), transparent 60%),
-                  radial-gradient(900px 500px at 90% 10%, rgba(0,163,173,0.12), transparent 55%),
-                  var(--bg);
-      color:var(--text);
+      background: var(--bg);
+      color: var(--text);
     }
 
     header{
       padding:18px 16px;
-      border-bottom:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,0.06), transparent);
+      background: linear-gradient(180deg, var(--primary2), var(--primary));
+      color:#fff;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
     }
 
-    h1{ margin:0; font-size:18px; }
+    .wrap{ max-width: 1700px; margin:0 auto; padding:16px 16px 30px; }
+    @media (min-width: 1700px){ .wrap { max-width: 96vw; } }
 
+    h1{ margin:0; font-size:22px; font-weight:800; letter-spacing:0.2px; }
     .sub{
       margin-top:6px;
-      color:var(--muted);
+      color: rgba(255,255,255,0.88);
       font-size:13px;
-      max-width:1200px;
+      max-width:1250px;
       line-height:1.35;
     }
 
-    /* Más ancho real */
-    .wrap { max-width: 1700px; margin:0 auto; padding:16px 16px 30px; }
-    @media (min-width: 1700px){ .wrap { max-width: 96vw; } }
+    .pill{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.92);
+      background: rgba(255,255,255,0.12);
+      white-space: nowrap;
+    }
 
     .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 10px; }
 
     .tabbtn{
       border:1px solid var(--border);
-      background:transparent;
-      color:var(--text);
+      background:#fff;
+      color: var(--text);
       padding:8px 10px;
       border-radius:10px;
       cursor:pointer;
       font-size:14px;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.02);
     }
     .tabbtn.active{
-      background: rgba(0,90,167,0.18);
-      border-color: rgba(0,90,167,0.55);
+      border-color: rgba(0,90,167,0.45);
+      background: rgba(0,90,167,0.08);
+      font-weight: 700;
     }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 50%), var(--card);
+      background: var(--card);
       border:1px solid var(--border);
       border-radius:14px;
       padding:12px;
@@ -86,112 +97,123 @@
 
     .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
 
-    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    label{ display:block; font-size:12px; color: var(--muted); margin-bottom:6px; }
 
     input, select, textarea{
       width:260px; max-width:100%;
       padding:9px 10px;
       border-radius:10px;
       border:1px solid var(--border);
-      background: var(--card2);
-      color:var(--text);
+      background:#fff;
+      color: var(--text);
       outline:none;
     }
     textarea{ width:540px; min-height:70px; resize:vertical; }
 
     .btn{
       border:1px solid var(--border);
-      background: rgba(255,255,255,0.06);
-      color:var(--text);
+      background:#fff;
+      color: var(--text);
       padding:9px 12px;
       border-radius:10px;
       cursor:pointer;
       font-size:14px;
     }
-    .btn:hover{ filter: brightness(1.08); }
+    .btn:hover{ filter: brightness(0.98); }
 
-    /* Arreglo del botón (texto visible + institucional) */
     .btn.primary{
-      background: rgba(0,90,167,0.65);
-      border-color: rgba(0,90,167,0.95);
-      color:#ffffff;
-      font-weight: 650;
+      background: var(--primary);
+      border-color: var(--primary);
+      color:#fff;
+      font-weight: 750;
     }
 
     .btn.danger{
-      background: rgba(255,92,122,0.18);
-      border-color: rgba(255,92,122,0.55);
-      color:#ffffff;
-      font-weight: 650;
+      background: #b42318;
+      border-color: #b42318;
+      color:#fff;
+      font-weight: 750;
     }
 
     .btn.small{ padding:6px 10px; border-radius:10px; font-size:13px; }
 
-    .hint{ font-size:12px; color:var(--muted); margin-top:8px; line-height:1.35; }
+    .hint{
+      font-size:12px;
+      color: var(--muted);
+      margin-top:10px;
+      line-height:1.35;
+    }
 
-    .pill{
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .footer{ margin-top:14px; color: var(--muted); font-size:12px; }
+
+    /* Estado pills */
+    .pillLocal{
       display:inline-block;
       padding:3px 8px;
       border-radius:999px;
       font-size:12px;
       border:1px solid var(--border);
-      color:var(--muted);
-      background: rgba(255,255,255,0.04);
+      background:#fff;
+      font-weight:700;
     }
-    .pill.ok{ border-color: rgba(61,220,151,0.6); color: var(--ok); }
-    .pill.warn{ border-color: rgba(255,209,102,0.6); color: var(--warn); }
-    .pill.bad{ border-color: rgba(255,92,122,0.6); color: var(--bad); }
+    .pillLocal.ok{ border-color: rgba(26,163,111,0.35); color: var(--ok); background: rgba(26,163,111,0.08); }
+    .pillLocal.warn{ border-color: rgba(201,140,16,0.35); color: var(--warn); background: rgba(201,140,16,0.10); }
+    .pillLocal.bad{ border-color: rgba(214,69,93,0.35); color: var(--bad); background: rgba(214,69,93,0.10); }
 
-    .grid2{ display:grid; grid-template-columns: 1fr; gap:10px; }
-    @media (min-width: 900px){ .grid2{ grid-template-columns: 1fr 1fr; } }
-
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
-    .footer{ margin-top:14px; color:var(--muted); font-size:12px; }
-    a{ color:#9fb6ff; }
-
-    /* Tabulator look (más profesional y legible) */
+    /* Tabulator institucional (CLARO, texto oscuro) */
     .tabulator{
       border:1px solid var(--border) !important;
-      background: rgba(255,255,255,0.03) !important;
+      background:#fff !important;
       border-radius: 12px;
       overflow: hidden;
     }
     .tabulator .tabulator-header{
-      background: rgba(0,0,0,0.20) !important;
-      border-bottom: 1px solid var(--border) !important;
-      color: var(--text) !important;
+      background: linear-gradient(180deg, #0b7dbb, #005aa7) !important;
+      border-bottom: 1px solid rgba(255,255,255,0.18) !important;
+      color:#fff !important;
     }
     .tabulator .tabulator-header .tabulator-col{
       background: transparent !important;
-      border-right: 1px solid rgba(255,255,255,0.07) !important;
+      border-right: 1px solid rgba(255,255,255,0.18) !important;
     }
     .tabulator .tabulator-header .tabulator-col-title{
-      font-weight: 650;
+      font-weight: 800;
+      color:#fff !important;
     }
-    .tabulator .tabulator-row{
-      background: rgba(255,255,255,0.02) !important;
-      color: var(--text) !important;
-    }
-    .tabulator .tabulator-row.tabulator-row-even{
-      background: rgba(255,255,255,0.04) !important;
-    }
-    .tabulator .tabulator-cell{
-      border-right: 1px solid rgba(255,255,255,0.06) !important;
-    }
-    .tabulator .tabulator-footer{
-      background: rgba(0,0,0,0.18) !important;
-      border-top: 1px solid var(--border) !important;
-      color: var(--muted) !important;
-    }
-    /* filtros de columna */
+
     .tabulator .tabulator-header input,
     .tabulator .tabulator-header select{
-      background: rgba(0,0,0,0.22) !important;
-      border: 1px solid rgba(255,255,255,0.15) !important;
-      color: var(--text) !important;
+      background: rgba(255,255,255,0.95) !important;
+      border: 1px solid rgba(255,255,255,0.65) !important;
+      color: #0b1f33 !important;
       border-radius: 10px;
       padding: 6px 8px !important;
       height: 30px;
+      outline: none !important;
+    }
+
+    .tabulator .tabulator-row{
+      background:#fff !important;
+      color: var(--text) !important;  /* <- ARREGLA TEXTO */
+    }
+    .tabulator .tabulator-row.tabulator-row-even{
+      background:#f7fbff !important;
+      color: var(--text) !important;
+    }
+    .tabulator .tabulator-row:hover{
+      background: rgba(0,90,167,0.06) !important;
+    }
+
+    .tabulator .tabulator-cell{
+      border-right: 1px solid rgba(10, 40, 80, 0.08) !important;
+      color: var(--text) !important;  /* <- ARREGLA TEXTO */
+    }
+
+    .tabulator .tabulator-footer{
+      background:#f3f7fb !important;
+      border-top: 1px solid var(--border) !important;
+      color: var(--muted) !important;
     }
   </style>
 </head>
@@ -200,84 +222,81 @@
 <header>
   <div class="wrap" style="display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
     <div style="display:flex; gap:14px; align-items:center;">
-      <img src="/assets/logo-ssn.png" alt="Servicio de Salud Ñuble" style="height:56px; width:auto;" />
+      <img src="/assets/logo-ssn.png" alt="Servicio de Salud Ñuble" style="height:58px; width:auto; background:#fff; border-radius:999px; padding:4px;" />
       <div>
-        <h1 style="margin:0; font-size:18px;">Bolsa de Donación / Préstamo de Medicamentos (Avisos)</h1>
-        <div class="sub" style="margin-top:6px;">
-          Plataforma para publicar medicamentos disponibles por donación/préstamo (por no uso o riesgo de vencimiento).
+        <h1>Avisos de donación/préstamo de medicamentos del Servicio de Salud Ñuble</h1>
+        <div class="sub">
+          Plataforma interna para publicar medicamentos disponibles por donación o préstamo (no uso / riesgo de vencimiento).
           No reemplaza la gestión legal/logística (actas, cadena de frío, controlados, etc.). No ingresar datos de pacientes.
         </div>
       </div>
     </div>
 
-    <div class="pill" style="border-color:rgba(0,90,167,0.55); color:#cfe4ff;">
-      Servicio de Salud Ñuble · Piloto
-    </div>
+    <div class="pill">Servicio de Salud Ñuble · Piloto</div>
   </div>
 </header>
 
 <div class="wrap">
 
   <div class="tabs">
-    <button class="tabbtn active" data-tab="ver">Ver ofertas</button>
+    <button class="tabbtn active" data-tab="ver">Ver avisos</button>
     <button class="tabbtn" data-tab="publicar">Publicar / Actualizar (subir Excel)</button>
     <button class="tabbtn" data-tab="stats">Estadísticas</button>
   </div>
 
-  <!-- VER OFERTAS -->
+  <!-- VER -->
   <section id="tab-ver" class="card">
     <div class="row">
       <div style="display:flex; gap:8px; align-items:center;">
         <button class="btn" id="btn-refresh">Actualizar</button>
         <button class="btn" id="btn-clear-filters">Limpiar filtros</button>
-        <span class="pill" id="last-updated">sin actualizar</span>
+        <span class="pillLocal ok" id="last-updated">sin actualizar</span>
       </div>
 
       <div style="flex:1"></div>
 
       <div>
         <label>Filtro rápido</label>
-        <input id="quick-filter" placeholder="Ej: losartán / amoxi / 2026-08 / CESFAM..." />
+        <input id="quick-filter" placeholder="Ej: losartán / 2026-08 / CESFAM..." />
       </div>
     </div>
 
     <div style="height:12px"></div>
     <div id="offers-table"></div>
 
-    <div class="hint">
-      Consejo de uso: antes de solicitar compra/reposición, revisa aquí si la red tiene disponibilidad.
-      Puedes filtrar por medicamento, presentación, vencimiento o establecimiento.
+    <!-- TEXTO DE ABAJO (EDITABLE) -->
+    <div class="hint" id="texto-inferior">
+      Uso sugerido: antes de solicitar compra/reposición, revise primero si existe disponibilidad en la red.
+      Puede filtrar por medicamento, presentación, vencimiento, establecimiento o “reservado por”.
     </div>
   </section>
 
   <!-- PUBLICAR -->
   <section id="tab-publicar" class="card" style="display:none">
-    <div class="grid2">
-      <div>
-        <div class="row">
-          <div>
-            <label>Clave de publicación</label>
-            <input id="site-key" type="password" placeholder="(te la entrega el administrador)" />
-          </div>
-          <div>
-            <label>Archivo Excel</label>
-            <input id="file" type="file" accept=".xlsx,.xls" />
-          </div>
+    <div style="display:grid; grid-template-columns: 1fr; gap:12px;">
+      <div class="row">
+        <div>
+          <label>Clave de publicación</label>
+          <input id="site-key" type="password" placeholder="(te la entrega el administrador)" />
         </div>
-
-        <div class="hint">
-          La planilla debe tener una hoja (1ª hoja) con encabezados exactos:
-          <span class="mono">Medicamento, Presentacion, Lote, Vencimiento, Cantidad, Establecimiento, ContactoEmail</span>.
-          <br/>Opcional: <span class="mono">Observaciones</span>.
-          <br/><b>Recomendado:</b> 1 archivo por establecimiento.
+        <div>
+          <label>Archivo Excel</label>
+          <input id="file" type="file" accept=".xlsx,.xls" />
         </div>
+      </div>
 
-        <div style="height:10px"></div>
+      <div class="hint">
+        Encabezados exactos (primera hoja):
+        <span class="mono">Medicamento, Presentacion, Lote, Vencimiento, Cantidad, Establecimiento, ContactoEmail</span>.
+        <br/>Opcional: <span class="mono">Observaciones</span> (se almacena, pero no se muestra en la tabla).
+      </div>
+
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn primary" id="btn-publish" disabled>Publicar / Actualizar</button>
         <button class="btn" id="btn-clear">Limpiar</button>
-
-        <div class="footer" id="publish-status"></div>
       </div>
+
+      <div class="footer" id="publish-status"></div>
 
       <div>
         <label>Vista previa (filas válidas)</label>
@@ -291,7 +310,7 @@
   <section id="tab-stats" class="card" style="display:none">
     <div class="row">
       <button class="btn" id="btn-stats">Actualizar estadísticas</button>
-      <span class="pill" id="stats-updated">sin actualizar</span>
+      <span class="pillLocal ok" id="stats-updated">sin actualizar</span>
     </div>
     <div style="height:12px"></div>
     <div id="stats-box" class="hint">—</div>
@@ -300,17 +319,13 @@
 </div>
 
 <script>
-  // ---------- Helpers ----------
   const $ = (id) => document.getElementById(id);
 
   function isoDateFromAny(v){
-    // Accept: Date, excel serial, "YYYY-MM-DD", "DD/MM/YYYY", "DD-MM-YYYY"
     if(v === null || v === undefined) return "";
-    if(v instanceof Date && !isNaN(v.getTime())){
-      return v.toISOString().slice(0,10);
-    }
+    if(v instanceof Date && !isNaN(v.getTime())) return v.toISOString().slice(0,10);
+
     if(typeof v === "number" && v > 20000 && v < 60000){
-      // Excel serial date (rough)
       const utc_days = Math.floor(v - 25569);
       const utc_value = utc_days * 86400;
       const d = new Date(utc_value * 1000);
@@ -319,12 +334,13 @@
     const s = String(v).trim();
     if(!s) return "";
     if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
     const m1 = s.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
     if(m1){
       const dd = m1[1], mm = m1[2], yyyy = m1[3];
       return `${yyyy}-${mm}-${dd}`;
     }
-    return s; // last resort
+    return s;
   }
 
   function normText(v){ return String(v ?? "").trim(); }
@@ -334,18 +350,18 @@
     if(!r.medicamento) errors.push("Medicamento vacío");
     if(!r.presentacion) errors.push("Presentación vacía");
     if(!r.lote) errors.push("Lote vacío");
-    if(!r.vencimiento || !/^\d{4}-\d{2}-\d{2}$/.test(r.vencimiento)) errors.push("Vencimiento inválido (use YYYY-MM-DD o DD/MM/YYYY)");
+    if(!r.vencimiento || !/^\d{4}-\d{2}-\d{2}$/.test(r.vencimiento)) errors.push("Vencimiento inválido");
     if(!(Number(r.cantidad) > 0)) errors.push("Cantidad debe ser > 0");
     if(!r.establecimiento) errors.push("Establecimiento vacío");
-    if(!r.contactoEmail || !r.contactoEmail.includes("@")) errors.push("Email de contacto inválido");
+    if(!r.contactoEmail || !r.contactoEmail.includes("@")) errors.push("Email inválido");
     return errors;
   }
 
   function statusPill(state){
-    if(state === "Disponible") return `<span class="pill ok">Disponible</span>`;
-    if(state === "Reservado") return `<span class="pill warn">Reservado</span>`;
-    if(state === "Cerrado") return `<span class="pill bad">Cerrado</span>`;
-    return `<span class="pill">${state}</span>`;
+    if(state === "Disponible") return `<span class="pillLocal ok">Disponible</span>`;
+    if(state === "Reservado") return `<span class="pillLocal warn">Reservado</span>`;
+    if(state === "Cerrado") return `<span class="pillLocal bad">Cerrado</span>`;
+    return `<span class="pillLocal">${state}</span>`;
   }
 
   function estadoOrden(estado){
@@ -355,7 +371,7 @@
     return 9;
   }
 
-  // ---------- Tabs ----------
+  // Tabs
   document.querySelectorAll(".tabbtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       document.querySelectorAll(".tabbtn").forEach(b=>b.classList.remove("active"));
@@ -365,15 +381,7 @@
     });
   });
 
-  // ---------- Table: Offers ----------
-  function applyDefaultSort(){
-    offersTable.setSort([
-      {column:"_estadoOrden", dir:"asc"},
-      {column:"vencimiento", dir:"asc"},
-      {column:"medicamento", dir:"asc"},
-    ]);
-  }
-
+  // Offers table
   let offersTable = new Tabulator("#offers-table", {
     layout:"fitColumns",
     height:"78vh",
@@ -384,23 +392,20 @@
       {column:"medicamento", dir:"asc"},
     ],
     columns:[
-      {title:"Estado", field:"estado", width:110, formatter:(cell)=> statusPill(cell.getValue()), hozAlign:"center",
+      {title:"Estado", field:"estado", width:115, formatter:(cell)=> statusPill(cell.getValue()), hozAlign:"center",
         headerFilter:"list", headerFilterParams:{values:["", "Disponible","Reservado","Cerrado"]}
       },
-
       {title:"Medicamento", field:"medicamento", headerFilter:"input"},
       {title:"Presentación", field:"presentacion", headerFilter:"input"},
       {title:"Lote", field:"lote", width:120, headerFilter:"input"},
       {title:"Venc.", field:"vencimiento", width:110, headerFilter:"input"},
-      {title:"Cantidad", field:"cantidad", width:90, hozAlign:"right"},
+      {title:"Cantidad", field:"cantidad", width:95, hozAlign:"right"},
       {title:"Establecimiento", field:"establecimiento", headerFilter:"input"},
       {title:"Contacto", field:"contactoEmail", width:190},
-      {title:"Observaciones", field:"observaciones", width:260},
-
+      {title:"Reservado por", field:"reservadoPor", width:190, headerFilter:"input"},
       {title:"Acción", field:"_action", width:140, hozAlign:"center",
         formatter:(cell)=>{
           const row = cell.getRow().getData();
-
           if(row.estado === "Disponible"){
             return `<button class="btn primary small" data-act="reserve" data-id="${row.id}">Reservar</button>`;
           }
@@ -409,7 +414,7 @@
           }
           return "";
         },
-        cellClick: async (e, cell)=>{
+        cellClick: async (e)=>{
           const btn = e.target.closest("button[data-id]");
           if(!btn) return;
 
@@ -433,11 +438,8 @@
               body: JSON.stringify({ siteKey: key, action:"reserve", id, reservadoPor })
             });
             const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
-            if(out.ok){
-              await loadOffers(true);
-            }else{
-              alert("Error: " + (out.error || "desconocido"));
-            }
+            if(out.ok){ await loadOffers(true); }
+            else{ alert("Error: " + (out.error || "desconocido")); }
           }
 
           if(act === "close"){
@@ -449,16 +451,11 @@
               body: JSON.stringify({ siteKey: key, action:"close", id })
             });
             const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
-            if(out.ok){
-              await loadOffers(true);
-            }else{
-              alert("Error: " + (out.error || "desconocido"));
-            }
+            if(out.ok){ await loadOffers(true); }
+            else{ alert("Error: " + (out.error || "desconocido")); }
           }
         }
       },
-
-      /* campo oculto para orden */
       {title:"_estadoOrden", field:"_estadoOrden", visible:false},
     ]
   });
@@ -468,83 +465,46 @@
     offersTable.clearHeaderFilter();
     offersTable.clearFilter(true);
     offersTable.clearSort();
-    applyDefaultSort();
+    offersTable.setSort([
+      {column:"_estadoOrden", dir:"asc"},
+      {column:"vencimiento", dir:"asc"},
+      {column:"medicamento", dir:"asc"},
+    ]);
   }
 
   $("btn-clear-filters").addEventListener("click", clearAllFilters);
 
   $("quick-filter").addEventListener("input", (e)=>{
     const q = e.target.value.trim().toLowerCase();
-    if(!q){
-      offersTable.clearFilter(true);
-      return;
-    }
+    if(!q){ offersTable.clearFilter(true); return; }
     offersTable.setFilter((data)=>{
       const blob = [
         data.estado, data.medicamento, data.presentacion, data.lote, data.vencimiento,
-        String(data.cantidad), data.establecimiento, data.contactoEmail, data.observaciones
+        String(data.cantidad), data.establecimiento, data.contactoEmail, (data.reservadoPor||"")
       ].join(" ").toLowerCase();
       return blob.includes(q);
     });
   });
 
-  // ---------- Load offers (con cache simple para gastar menos créditos) ----------
-  const CACHE_KEY = "offersCacheV1";
-  const CACHE_TIME_KEY = "offersCacheTimeV1";
-  const CACHE_TTL_MS = 30 * 1000; // 30s
-
   async function loadOffers(force=false){
-    // cache
-    if(!force){
-      const t = Number(localStorage.getItem(CACHE_TIME_KEY) || 0);
-      if(t && (Date.now() - t) < CACHE_TTL_MS){
-        try{
-          const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
-          if(cached && Array.isArray(cached.items)){
-            offersTable.setData(cached.items);
-            $("last-updated").textContent = "actualizado (cache): " + new Date().toLocaleString();
-            $("last-updated").className = "pill ok";
-            applyDefaultSort();
-            return;
-          }
-        }catch{}
-      }
-    }
-
     const resp = await fetch("/.netlify/functions/api?action=list");
     const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
-    if(!out.ok){
-      alert("Error al cargar: " + (out.error || "desconocido"));
-      return;
-    }
+    if(!out.ok){ alert("Error al cargar: " + (out.error || "desconocido")); return; }
 
     const items = (out.items || []).map(x=>{
       const y = {...x};
       y._estadoOrden = estadoOrden(y.estado);
-
-      // si viene reservadoPor y no está en observaciones, lo agregamos para trazabilidad visible
-      if(y.reservadoPor){
-        const marker = `Reservado por: ${y.reservadoPor}`;
-        if(!String(y.observaciones||"").includes(marker)){
-          y.observaciones = (y.observaciones ? (y.observaciones + " · ") : "") + marker;
-        }
-      }
       return y;
     });
 
     offersTable.setData(items);
-    $("last-updated").textContent = "actualizado: " + new Date().toLocaleString();
-    $("last-updated").className = "pill ok";
-    applyDefaultSort();
-
-    // save cache
-    localStorage.setItem(CACHE_KEY, JSON.stringify({items}));
-    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
+    $("last-updated").textContent = "Actualizado: " + new Date().toLocaleString();
+    $("last-updated").className = "pillLocal ok";
   }
 
   $("btn-refresh").addEventListener("click", ()=>loadOffers(true));
 
-  // ---------- Publish: read Excel ----------
+  // Publish
   let parsedRows = [];
   let previewTable = new Tabulator("#preview-table", {
     layout:"fitColumns",
@@ -558,7 +518,6 @@
       {title:"Cantidad", field:"cantidad", width:90, hozAlign:"right"},
       {title:"Establecimiento", field:"establecimiento"},
       {title:"Contacto", field:"contactoEmail"},
-      {title:"Obs.", field:"observaciones"}
     ]
   });
 
@@ -566,8 +525,6 @@
     const v = $("site-key").value.trim();
     if(v) localStorage.setItem("siteKey", v);
   });
-
-  // restore key for convenience (not secure, but practical for internal use)
   const savedKey = localStorage.getItem("siteKey");
   if(savedKey) $("site-key").value = savedKey;
 
@@ -605,11 +562,7 @@
 
     parsedRows = valid;
     previewTable.setData(valid.slice(0, 200));
-    $("preview-hint").innerHTML = `
-      Filas válidas: <b>${valid.length}</b> · Filas rechazadas: <b>${invalid.length}</b>.
-      ${invalid.length ? " (Revisa formato de fecha y email.)" : ""}
-    `;
-
+    $("preview-hint").innerHTML = `Filas válidas: <b>${valid.length}</b> · Rechazadas: <b>${invalid.length}</b>.`;
     $("btn-publish").disabled = (valid.length === 0);
   });
 
@@ -630,7 +583,6 @@
     $("btn-publish").disabled = true;
     $("publish-status").textContent = "Publicando…";
 
-    // group by establecimiento (permite 1 archivo con varias comunas si alguien centraliza)
     const groups = {};
     for(const r of parsedRows){
       const k = r.establecimiento;
@@ -659,27 +611,22 @@
     $("publish-status").innerHTML = `✅ Publicación lista. Filas insertadas: <b>${totalInserted}</b>.`;
     $("btn-publish").disabled = false;
 
-    // refresh offers (force)
     await loadOffers(true);
-
-    // switch to view
     document.querySelector('.tabbtn[data-tab="ver"]').click();
   });
 
-  // ---------- Stats ----------
+  // Stats
   $("btn-stats").addEventListener("click", async ()=>{
     const resp = await fetch("/.netlify/functions/api?action=stats");
     const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
-    if(!out.ok){
-      alert("Error stats: " + (out.error || "desconocido"));
-      return;
-    }
-    $("stats-updated").textContent = "actualizado: " + new Date().toLocaleString();
-    $("stats-updated").className = "pill ok";
+    if(!out.ok){ alert("Error stats: " + (out.error || "desconocido")); return; }
+
+    $("stats-updated").textContent = "Actualizado: " + new Date().toLocaleString();
+    $("stats-updated").className = "pillLocal ok";
 
     const s = out.stats || {};
     $("stats-box").innerHTML = `
-      <b>Ofertas activas (Disponible):</b> ${s.disponibles ?? "—"}<br/>
+      <b>Disponibles:</b> ${s.disponibles ?? "—"}<br/>
       <b>Reservadas:</b> ${s.reservados ?? "—"}<br/>
       <b>Cerradas:</b> ${s.cerrados ?? "—"}<br/><br/>
       <b>Top establecimientos oferentes (por ofertas disponibles):</b><br/>
@@ -687,7 +634,6 @@
     `;
   });
 
-  // initial load
   loadOffers(false);
 </script>
 </body>
