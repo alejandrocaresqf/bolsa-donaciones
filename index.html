@@ -13,34 +13,186 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
-    :root { --bg:#0b1220; --card:#111a2e; --text:#eaf0ff; --muted:#b7c0da; --border:#223152; --ok:#3ddc97; --warn:#ffd166; --bad:#ff5c7a; }
-    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); color:var(--text); }
-    header { padding:18px 16px; border-bottom:1px solid var(--border); background:linear-gradient(180deg, rgba(255,255,255,0.05), transparent); }
-    h1 { margin:0; font-size:18px; }
-    .sub { margin-top:6px; color:var(--muted); font-size:13px; max-width:1000px; line-height:1.35; }
-.wrap { max-width:1600px; margin:0 auto; padding:16px 16px 30px; }
-@media (min-width: 1700px){ .wrap { max-width: 95vw; } }
-    .tabs { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 10px; }
-    .tabbtn { border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer; font-size:14px; }
-    .tabbtn.active { background:rgba(255,255,255,0.08); }
-    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; margin-top:10px; }
-    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
-    label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
-    input, select, textarea { width:260px; max-width:100%; padding:9px 10px; border-radius:10px; border:1px solid var(--border); background:#0f1730; color:var(--text); outline:none; }
+    :root{
+      --bg:#07101d;
+      --card:#0f1b31;
+      --card2:#0c1528;
+      --text:#eaf0ff;
+      --muted:#b7c0da;
+      --border:#223152;
+
+      --primary:#005aa7;      /* azul institucional */
+      --primary2:#00a3ad;     /* acento */
+      --ok:#3ddc97;
+      --warn:#ffd166;
+      --bad:#ff5c7a;
+
+      --shadow: 0 14px 30px rgba(0,0,0,0.22);
+    }
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 10% 0%, rgba(0,90,167,0.18), transparent 60%),
+                  radial-gradient(900px 500px at 90% 10%, rgba(0,163,173,0.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+
+    header{
+      padding:18px 16px;
+      border-bottom:1px solid var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,0.06), transparent);
+    }
+
+    h1{ margin:0; font-size:18px; }
+
+    .sub{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      max-width:1200px;
+      line-height:1.35;
+    }
+
+    /* Más ancho real */
+    .wrap { max-width: 1700px; margin:0 auto; padding:16px 16px 30px; }
+    @media (min-width: 1700px){ .wrap { max-width: 96vw; } }
+
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 10px; }
+
+    .tabbtn{
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .tabbtn.active{
+      background: rgba(0,90,167,0.18);
+      border-color: rgba(0,90,167,0.55);
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), transparent 50%), var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      margin-top:10px;
+      box-shadow: var(--shadow);
+    }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+
+    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+
+    input, select, textarea{
+      width:260px; max-width:100%;
+      padding:9px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background: var(--card2);
+      color:var(--text);
+      outline:none;
+    }
     textarea{ width:540px; min-height:70px; resize:vertical; }
-    .btn { border:1px solid var(--border); background:rgba(255,255,255,0.08); color:var(--text); padding:9px 12px; border-radius:10px; cursor:pointer; font-size:14px; }
-    .btn.primary { background:rgba(61, 220, 151, 0.16); border-color:rgba(61, 220, 151, 0.5); }
-    .btn.danger { background:rgba(255, 92, 122, 0.16); border-color:rgba(255, 92, 122, 0.5); }
-    .hint { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.35; }
-    .pill { display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border); color:var(--muted); }
-    .pill.ok { border-color:rgba(61, 220, 151, 0.6); color:var(--ok); }
-    .pill.warn { border-color:rgba(255, 209, 102, 0.6); color:var(--warn); }
-    .pill.bad { border-color:rgba(255, 92, 122, 0.6); color:var(--bad); }
-    .grid2 { display:grid; grid-template-columns: 1fr; gap:10px; }
+
+    .btn{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .btn:hover{ filter: brightness(1.08); }
+
+    /* Arreglo del botón (texto visible + institucional) */
+    .btn.primary{
+      background: rgba(0,90,167,0.65);
+      border-color: rgba(0,90,167,0.95);
+      color:#ffffff;
+      font-weight: 650;
+    }
+
+    .btn.danger{
+      background: rgba(255,92,122,0.18);
+      border-color: rgba(255,92,122,0.55);
+      color:#ffffff;
+      font-weight: 650;
+    }
+
+    .btn.small{ padding:6px 10px; border-radius:10px; font-size:13px; }
+
+    .hint{ font-size:12px; color:var(--muted); margin-top:8px; line-height:1.35; }
+
+    .pill{
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid var(--border);
+      color:var(--muted);
+      background: rgba(255,255,255,0.04);
+    }
+    .pill.ok{ border-color: rgba(61,220,151,0.6); color: var(--ok); }
+    .pill.warn{ border-color: rgba(255,209,102,0.6); color: var(--warn); }
+    .pill.bad{ border-color: rgba(255,92,122,0.6); color: var(--bad); }
+
+    .grid2{ display:grid; grid-template-columns: 1fr; gap:10px; }
     @media (min-width: 900px){ .grid2{ grid-template-columns: 1fr 1fr; } }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
-    .footer { margin-top:14px; color:var(--muted); font-size:12px; }
-    a { color: #9fb6ff; }
+
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .footer{ margin-top:14px; color:var(--muted); font-size:12px; }
+    a{ color:#9fb6ff; }
+
+    /* Tabulator look (más profesional y legible) */
+    .tabulator{
+      border:1px solid var(--border) !important;
+      background: rgba(255,255,255,0.03) !important;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .tabulator .tabulator-header{
+      background: rgba(0,0,0,0.20) !important;
+      border-bottom: 1px solid var(--border) !important;
+      color: var(--text) !important;
+    }
+    .tabulator .tabulator-header .tabulator-col{
+      background: transparent !important;
+      border-right: 1px solid rgba(255,255,255,0.07) !important;
+    }
+    .tabulator .tabulator-header .tabulator-col-title{
+      font-weight: 650;
+    }
+    .tabulator .tabulator-row{
+      background: rgba(255,255,255,0.02) !important;
+      color: var(--text) !important;
+    }
+    .tabulator .tabulator-row.tabulator-row-even{
+      background: rgba(255,255,255,0.04) !important;
+    }
+    .tabulator .tabulator-cell{
+      border-right: 1px solid rgba(255,255,255,0.06) !important;
+    }
+    .tabulator .tabulator-footer{
+      background: rgba(0,0,0,0.18) !important;
+      border-top: 1px solid var(--border) !important;
+      color: var(--muted) !important;
+    }
+    /* filtros de columna */
+    .tabulator .tabulator-header input,
+    .tabulator .tabulator-header select{
+      background: rgba(0,0,0,0.22) !important;
+      border: 1px solid rgba(255,255,255,0.15) !important;
+      color: var(--text) !important;
+      border-radius: 10px;
+      padding: 6px 8px !important;
+      height: 30px;
+    }
   </style>
 </head>
 
@@ -58,7 +210,7 @@
       </div>
     </div>
 
-    <div class="pill" style="border-color:rgba(255,255,255,0.25);">
+    <div class="pill" style="border-color:rgba(0,90,167,0.55); color:#cfe4ff;">
       Servicio de Salud Ñuble · Piloto
     </div>
   </div>
@@ -75,8 +227,9 @@
   <!-- VER OFERTAS -->
   <section id="tab-ver" class="card">
     <div class="row">
-      <div>
+      <div style="display:flex; gap:8px; align-items:center;">
         <button class="btn" id="btn-refresh">Actualizar</button>
+        <button class="btn" id="btn-clear-filters">Limpiar filtros</button>
         <span class="pill" id="last-updated">sin actualizar</span>
       </div>
 
@@ -115,8 +268,8 @@
         <div class="hint">
           La planilla debe tener una hoja (1ª hoja) con encabezados exactos:
           <span class="mono">Medicamento, Presentacion, Lote, Vencimiento, Cantidad, Establecimiento, ContactoEmail</span>.
-          <br/>Opcionales: <span class="mono">Tipo</span> (Normal/Refrigerado/Controlado) y <span class="mono">Observaciones</span>.
-          <br/><b>Recomendado:</b> 1 archivo por establecimiento. Si subes varias comunas en un mismo archivo, el sistema las separa automáticamente.
+          <br/>Opcional: <span class="mono">Observaciones</span>.
+          <br/><b>Recomendado:</b> 1 archivo por establecimiento.
         </div>
 
         <div style="height:10px"></div>
@@ -195,6 +348,13 @@
     return `<span class="pill">${state}</span>`;
   }
 
+  function estadoOrden(estado){
+    if(estado === "Disponible") return 1;
+    if(estado === "Reservado") return 2;
+    if(estado === "Cerrado") return 3;
+    return 9;
+  }
+
   // ---------- Tabs ----------
   document.querySelectorAll(".tabbtn").forEach(btn=>{
     btn.addEventListener("click", ()=>{
@@ -206,56 +366,112 @@
   });
 
   // ---------- Table: Offers ----------
+  function applyDefaultSort(){
+    offersTable.setSort([
+      {column:"_estadoOrden", dir:"asc"},
+      {column:"vencimiento", dir:"asc"},
+      {column:"medicamento", dir:"asc"},
+    ]);
+  }
+
   let offersTable = new Tabulator("#offers-table", {
     layout:"fitColumns",
- height:"72vh",
+    height:"78vh",
     placeholder:"Sin datos. Presiona “Actualizar”.",
+    initialSort:[
+      {column:"_estadoOrden", dir:"asc"},
+      {column:"vencimiento", dir:"asc"},
+      {column:"medicamento", dir:"asc"},
+    ],
     columns:[
-      {title:"Estado", field:"estado", width:110, formatter:(cell)=> statusPill(cell.getValue()), hozAlign:"center", headerFilter:"list", headerFilterParams:{values:["", "Disponible","Reservado","Cerrado"]}},
+      {title:"Estado", field:"estado", width:110, formatter:(cell)=> statusPill(cell.getValue()), hozAlign:"center",
+        headerFilter:"list", headerFilterParams:{values:["", "Disponible","Reservado","Cerrado"]}
+      },
+
       {title:"Medicamento", field:"medicamento", headerFilter:"input"},
       {title:"Presentación", field:"presentacion", headerFilter:"input"},
       {title:"Lote", field:"lote", width:120, headerFilter:"input"},
       {title:"Venc.", field:"vencimiento", width:110, headerFilter:"input"},
       {title:"Cantidad", field:"cantidad", width:90, hozAlign:"right"},
-      {title:"Tipo", field:"tipo", width:120, headerFilter:"list", headerFilterParams:{values:["", "Normal","Refrigerado","Controlado"]}},
       {title:"Establecimiento", field:"establecimiento", headerFilter:"input"},
       {title:"Contacto", field:"contactoEmail", width:190},
-      {title:"Observaciones", field:"observaciones", width:220},
-      {title:"Acción", field:"_action", width:120, hozAlign:"center",
+      {title:"Observaciones", field:"observaciones", width:260},
+
+      {title:"Acción", field:"_action", width:140, hozAlign:"center",
         formatter:(cell)=>{
           const row = cell.getRow().getData();
-          if(row.estado !== "Disponible") return "";
-          return `<button class="btn primary" style="padding:6px 10px" data-id="${row.id}">Reservar</button>`;
+
+          if(row.estado === "Disponible"){
+            return `<button class="btn primary small" data-act="reserve" data-id="${row.id}">Reservar</button>`;
+          }
+          if(row.estado === "Reservado"){
+            return `<button class="btn danger small" data-act="close" data-id="${row.id}">Cerrar</button>`;
+          }
+          return "";
         },
         cellClick: async (e, cell)=>{
           const btn = e.target.closest("button[data-id]");
           if(!btn) return;
+
           const id = btn.dataset.id;
+          const act = btn.dataset.act;
+
           const key = $("site-key").value || localStorage.getItem("siteKey") || "";
           if(!key){
-            alert("Para reservar debes ingresar la Clave de publicación (pestaña Publicar).");
+            alert("Para reservar/cerrar debes ingresar la Clave (pestaña Publicar).");
             return;
           }
-          const reservadoPor = prompt("¿Quién reserva? (ej: CESFAM X / HCSF Y)");
-          if(!reservadoPor) return;
 
-          if(!confirm("Confirmar reserva (cambia estado a RESERVADO).")) return;
+          if(act === "reserve"){
+            const reservadoPor = prompt("¿Quién reserva? (ej: CESFAM X / HCSF Y)");
+            if(!reservadoPor) return;
+            if(!confirm("Confirmar reserva (cambia estado a RESERVADO).")) return;
 
-          const resp = await fetch("/.netlify/functions/api", {
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify({ siteKey: key, action:"reserve", id, reservadoPor })
-          });
-          const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
-          if(out.ok){
-            await loadOffers();
-          }else{
-            alert("Error: " + (out.error || "desconocido"));
+            const resp = await fetch("/.netlify/functions/api", {
+              method:"POST",
+              headers:{ "Content-Type":"application/json" },
+              body: JSON.stringify({ siteKey: key, action:"reserve", id, reservadoPor })
+            });
+            const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
+            if(out.ok){
+              await loadOffers(true);
+            }else{
+              alert("Error: " + (out.error || "desconocido"));
+            }
+          }
+
+          if(act === "close"){
+            if(!confirm("¿Cerrar esta oferta? (se marca como CERRADO)")) return;
+
+            const resp = await fetch("/.netlify/functions/api", {
+              method:"POST",
+              headers:{ "Content-Type":"application/json" },
+              body: JSON.stringify({ siteKey: key, action:"close", id })
+            });
+            const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
+            if(out.ok){
+              await loadOffers(true);
+            }else{
+              alert("Error: " + (out.error || "desconocido"));
+            }
           }
         }
-      }
+      },
+
+      /* campo oculto para orden */
+      {title:"_estadoOrden", field:"_estadoOrden", visible:false},
     ]
   });
+
+  function clearAllFilters(){
+    $("quick-filter").value = "";
+    offersTable.clearHeaderFilter();
+    offersTable.clearFilter(true);
+    offersTable.clearSort();
+    applyDefaultSort();
+  }
+
+  $("btn-clear-filters").addEventListener("click", clearAllFilters);
 
   $("quick-filter").addEventListener("input", (e)=>{
     const q = e.target.value.trim().toLowerCase();
@@ -266,31 +482,73 @@
     offersTable.setFilter((data)=>{
       const blob = [
         data.estado, data.medicamento, data.presentacion, data.lote, data.vencimiento,
-        String(data.cantidad), data.tipo, data.establecimiento, data.contactoEmail, data.observaciones
+        String(data.cantidad), data.establecimiento, data.contactoEmail, data.observaciones
       ].join(" ").toLowerCase();
       return blob.includes(q);
     });
   });
 
-  async function loadOffers(){
+  // ---------- Load offers (con cache simple para gastar menos créditos) ----------
+  const CACHE_KEY = "offersCacheV1";
+  const CACHE_TIME_KEY = "offersCacheTimeV1";
+  const CACHE_TTL_MS = 30 * 1000; // 30s
+
+  async function loadOffers(force=false){
+    // cache
+    if(!force){
+      const t = Number(localStorage.getItem(CACHE_TIME_KEY) || 0);
+      if(t && (Date.now() - t) < CACHE_TTL_MS){
+        try{
+          const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+          if(cached && Array.isArray(cached.items)){
+            offersTable.setData(cached.items);
+            $("last-updated").textContent = "actualizado (cache): " + new Date().toLocaleString();
+            $("last-updated").className = "pill ok";
+            applyDefaultSort();
+            return;
+          }
+        }catch{}
+      }
+    }
+
     const resp = await fetch("/.netlify/functions/api?action=list");
     const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
     if(!out.ok){
       alert("Error al cargar: " + (out.error || "desconocido"));
       return;
     }
-    offersTable.setData(out.items || []);
+
+    const items = (out.items || []).map(x=>{
+      const y = {...x};
+      y._estadoOrden = estadoOrden(y.estado);
+
+      // si viene reservadoPor y no está en observaciones, lo agregamos para trazabilidad visible
+      if(y.reservadoPor){
+        const marker = `Reservado por: ${y.reservadoPor}`;
+        if(!String(y.observaciones||"").includes(marker)){
+          y.observaciones = (y.observaciones ? (y.observaciones + " · ") : "") + marker;
+        }
+      }
+      return y;
+    });
+
+    offersTable.setData(items);
     $("last-updated").textContent = "actualizado: " + new Date().toLocaleString();
     $("last-updated").className = "pill ok";
+    applyDefaultSort();
+
+    // save cache
+    localStorage.setItem(CACHE_KEY, JSON.stringify({items}));
+    localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
   }
 
-  $("btn-refresh").addEventListener("click", loadOffers);
+  $("btn-refresh").addEventListener("click", ()=>loadOffers(true));
 
   // ---------- Publish: read Excel ----------
   let parsedRows = [];
   let previewTable = new Tabulator("#preview-table", {
     layout:"fitColumns",
-height:"45vh",
+    height:"55vh",
     placeholder:"Sube un Excel para ver la vista previa.",
     columns:[
       {title:"Medicamento", field:"medicamento"},
@@ -300,7 +558,6 @@ height:"45vh",
       {title:"Cantidad", field:"cantidad", width:90, hozAlign:"right"},
       {title:"Establecimiento", field:"establecimiento"},
       {title:"Contacto", field:"contactoEmail"},
-      {title:"Tipo", field:"tipo", width:120},
       {title:"Obs.", field:"observaciones"}
     ]
   });
@@ -335,7 +592,6 @@ height:"45vh",
       cantidad: Number(r.Cantidad || 0),
       establecimiento: normText(r.Establecimiento),
       contactoEmail: normText(r.ContactoEmail),
-      tipo: normText(r.Tipo || "Normal") || "Normal",
       observaciones: normText(r.Observaciones || "")
     }));
 
@@ -403,8 +659,9 @@ height:"45vh",
     $("publish-status").innerHTML = `✅ Publicación lista. Filas insertadas: <b>${totalInserted}</b>.`;
     $("btn-publish").disabled = false;
 
-    // refresh offers
-    await loadOffers();
+    // refresh offers (force)
+    await loadOffers(true);
+
     // switch to view
     document.querySelector('.tabbtn[data-tab="ver"]').click();
   });
@@ -431,8 +688,7 @@ height:"45vh",
   });
 
   // initial load
-  loadOffers();
+  loadOffers(false);
 </script>
-
 </body>
 </html>
