@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bolsa de Donación / Préstamo de Medicamentos</title>
+
+  <!-- Tabulator (tabla con filtros) -->
+  <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
+
+  <!-- SheetJS (leer Excel) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root { --bg:#0b1220; --card:#111a2e; --text:#eaf0ff; --muted:#b7c0da; --border:#223152; --ok:#3ddc97; --warn:#ffd166; --bad:#ff5c7a; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:var(--bg); color:var(--text); }
+    header { padding:18px 16px; border-bottom:1px solid var(--border); background:linear-gradient(180deg, rgba(255,255,255,0.05), transparent); }
+    h1 { margin:0; font-size:18px; }
+    .sub { margin-top:6px; color:var(--muted); font-size:13px; max-width:1000px; line-height:1.35; }
+    .wrap { max-width:1100px; margin:0 auto; padding:14px 12px 28px; }
+    .tabs { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0 10px; }
+    .tabbtn { border:1px solid var(--border); background:transparent; color:var(--text); padding:8px 10px; border-radius:10px; cursor:pointer; font-size:14px; }
+    .tabbtn.active { background:rgba(255,255,255,0.08); }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; margin-top:10px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+    label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input, select, textarea { width:260px; max-width:100%; padding:9px 10px; border-radius:10px; border:1px solid var(--border); background:#0f1730; color:var(--text); outline:none; }
+    textarea{ width:540px; min-height:70px; resize:vertical; }
+    .btn { border:1px solid var(--border); background:rgba(255,255,255,0.08); color:var(--text); padding:9px 12px; border-radius:10px; cursor:pointer; font-size:14px; }
+    .btn.primary { background:rgba(61, 220, 151, 0.16); border-color:rgba(61, 220, 151, 0.5); }
+    .btn.danger { background:rgba(255, 92, 122, 0.16); border-color:rgba(255, 92, 122, 0.5); }
+    .hint { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.35; }
+    .pill { display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; border:1px solid var(--border); color:var(--muted); }
+    .pill.ok { border-color:rgba(61, 220, 151, 0.6); color:var(--ok); }
+    .pill.warn { border-color:rgba(255, 209, 102, 0.6); color:var(--warn); }
+    .pill.bad { border-color:rgba(255, 92, 122, 0.6); color:var(--bad); }
+    .grid2 { display:grid; grid-template-columns: 1fr; gap:10px; }
+    @media (min-width: 900px){ .grid2{ grid-template-columns: 1fr 1fr; } }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+    .footer { margin-top:14px; color:var(--muted); font-size:12px; }
+    a { color: #9fb6ff; }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="wrap">
+    <h1>Bolsa de Donación / Préstamo de Medicamentos (Avisos)</h1>
+    <div class="sub">
+      Plataforma para publicar medicamentos disponibles por donación/préstamo (por no uso o riesgo de vencimiento).
+      <b>No reemplaza</b> la gestión legal/logística (actas, cadena de frío, controlados, etc.). No ingresar datos de pacientes.
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="tabs">
+    <button class="tabbtn active" data-tab="ver">Ver ofertas</button>
+    <button class="tabbtn" data-tab="publicar">Publicar / Actualizar (subir Excel)</button>
+    <button class="tabbtn" data-tab="stats">Estadísticas</button>
+  </div>
+
+  <!-- VER OFERTAS -->
+  <section id="tab-ver" class="card">
+    <div class="row">
+      <div>
+        <button class="btn" id="btn-refresh">Actualizar</button>
+        <span class="pill" id="last-updated">sin actualizar</span>
+      </div>
+
+      <div style="flex:1"></div>
+
+      <div>
+        <label>Filtro rápido</label>
+        <input id="quick-filter" placeholder="Ej: losartán / amoxi / 2026-08 / CESFAM..." />
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+    <div id="offers-table"></div>
+
+    <div class="hint">
+      Consejo de uso: antes de solicitar compra/reposición, revisa aquí si la red tiene disponibilidad.
+      Puedes filtrar por medicamento, presentación, vencimiento o establecimiento.
+    </div>
+  </section>
+
+  <!-- PUBLICAR -->
+  <section id="tab-publicar" class="card" style="display:none">
+    <div class="grid2">
+      <div>
+        <div class="row">
+          <div>
+            <label>Clave de publicación</label>
+            <input id="site-key" type="password" placeholder="(te la entrega el administrador)" />
+          </div>
+          <div>
+            <label>Archivo Excel</label>
+            <input id="file" type="file" accept=".xlsx,.xls" />
+          </div>
+        </div>
+
+        <div class="hint">
+          La planilla debe tener una hoja (1ª hoja) con encabezados exactos:
+          <span class="mono">Medicamento, Presentacion, Lote, Vencimiento, Cantidad, Establecimiento, ContactoEmail</span>.
+          <br/>Opcionales: <span class="mono">Tipo</span> (Normal/Refrigerado/Controlado) y <span class="mono">Observaciones</span>.
+          <br/><b>Recomendado:</b> 1 archivo por establecimiento. Si subes varias comunas en un mismo archivo, el sistema las separa automáticamente.
+        </div>
+
+        <div style="height:10px"></div>
+        <button class="btn primary" id="btn-publish" disabled>Publicar / Actualizar</button>
+        <button class="btn" id="btn-clear">Limpiar</button>
+
+        <div class="footer" id="publish-status"></div>
+      </div>
+
+      <div>
+        <label>Vista previa (filas válidas)</label>
+        <div id="preview-table"></div>
+        <div class="hint" id="preview-hint"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section id="tab-stats" class="card" style="display:none">
+    <div class="row">
+      <button class="btn" id="btn-stats">Actualizar estadísticas</button>
+      <span class="pill" id="stats-updated">sin actualizar</span>
+    </div>
+    <div style="height:12px"></div>
+    <div id="stats-box" class="hint">—</div>
+  </section>
+
+</div>
+
+<script>
+  // ---------- Helpers ----------
+  const $ = (id) => document.getElementById(id);
+
+  function isoDateFromAny(v){
+    // Accept: Date, excel serial, "YYYY-MM-DD", "DD/MM/YYYY", "DD-MM-YYYY"
+    if(v === null || v === undefined) return "";
+    if(v instanceof Date && !isNaN(v.getTime())){
+      return v.toISOString().slice(0,10);
+    }
+    if(typeof v === "number" && v > 20000 && v < 60000){
+      // Excel serial date (rough)
+      const utc_days = Math.floor(v - 25569);
+      const utc_value = utc_days * 86400;
+      const d = new Date(utc_value * 1000);
+      return d.toISOString().slice(0,10);
+    }
+    const s = String(v).trim();
+    if(!s) return "";
+    if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const m1 = s.match(/^(\d{2})[\/\-](\d{2})[\/\-](\d{4})$/);
+    if(m1){
+      const dd = m1[1], mm = m1[2], yyyy = m1[3];
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    return s; // last resort
+  }
+
+  function normText(v){ return String(v ?? "").trim(); }
+
+  function validateRow(r){
+    const errors = [];
+    if(!r.medicamento) errors.push("Medicamento vacío");
+    if(!r.presentacion) errors.push("Presentación vacía");
+    if(!r.lote) errors.push("Lote vacío");
+    if(!r.vencimiento || !/^\d{4}-\d{2}-\d{2}$/.test(r.vencimiento)) errors.push("Vencimiento inválido (use YYYY-MM-DD o DD/MM/YYYY)");
+    if(!(Number(r.cantidad) > 0)) errors.push("Cantidad debe ser > 0");
+    if(!r.establecimiento) errors.push("Establecimiento vacío");
+    if(!r.contactoEmail || !r.contactoEmail.includes("@")) errors.push("Email de contacto inválido");
+    return errors;
+  }
+
+  function statusPill(state){
+    if(state === "Disponible") return `<span class="pill ok">Disponible</span>`;
+    if(state === "Reservado") return `<span class="pill warn">Reservado</span>`;
+    if(state === "Cerrado") return `<span class="pill bad">Cerrado</span>`;
+    return `<span class="pill">${state}</span>`;
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll(".tabbtn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".tabbtn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      const tab = btn.dataset.tab;
+      ["ver","publicar","stats"].forEach(t=> $("tab-"+t).style.display = (t===tab) ? "" : "none");
+    });
+  });
+
+  // ---------- Table: Offers ----------
+  let offersTable = new Tabulator("#offers-table", {
+    layout:"fitColumns",
+    height:"540px",
+    placeholder:"Sin datos. Presiona “Actualizar”.",
+    columns:[
+      {title:"Estado", field:"estado", width:110, formatter:(cell)=> statusPill(cell.getValue()), hozAlign:"center", headerFilter:"list", headerFilterParams:{values:["", "Disponible","Reservado","Cerrado"]}},
+      {title:"Medicamento", field:"medicamento", headerFilter:"input"},
+      {title:"Presentación", field:"presentacion", headerFilter:"input"},
+      {title:"Lote", field:"lote", width:120, headerFilter:"input"},
+      {title:"Venc.", field:"vencimiento", width:110, headerFilter:"input"},
+      {title:"Cantidad", field:"cantidad", width:90, hozAlign:"right"},
+      {title:"Tipo", field:"tipo", width:120, headerFilter:"list", headerFilterParams:{values:["", "Normal","Refrigerado","Controlado"]}},
+      {title:"Establecimiento", field:"establecimiento", headerFilter:"input"},
+      {title:"Contacto", field:"contactoEmail", width:190},
+      {title:"Observaciones", field:"observaciones", width:220},
+      {title:"Acción", field:"_action", width:120, hozAlign:"center",
+        formatter:(cell)=>{
+          const row = cell.getRow().getData();
+          if(row.estado !== "Disponible") return "";
+          return `<button class="btn primary" style="padding:6px 10px" data-id="${row.id}">Reservar</button>`;
+        },
+        cellClick: async (e, cell)=>{
+          const btn = e.target.closest("button[data-id]");
+          if(!btn) return;
+          const id = btn.dataset.id;
+          const key = $("site-key").value || localStorage.getItem("siteKey") || "";
+          if(!key){
+            alert("Para reservar debes ingresar la Clave de publicación (pestaña Publicar).");
+            return;
+          }
+          const reservadoPor = prompt("¿Quién reserva? (ej: CESFAM X / HCSF Y)");
+          if(!reservadoPor) return;
+
+          if(!confirm("Confirmar reserva (cambia estado a RESERVADO).")) return;
+
+          const resp = await fetch("/.netlify/functions/api", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ siteKey: key, action:"reserve", id, reservadoPor })
+          });
+          const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
+          if(out.ok){
+            await loadOffers();
+          }else{
+            alert("Error: " + (out.error || "desconocido"));
+          }
+        }
+      }
+    ]
+  });
+
+  $("quick-filter").addEventListener("input", (e)=>{
+    const q = e.target.value.trim().toLowerCase();
+    if(!q){
+      offersTable.clearFilter(true);
+      return;
+    }
+    offersTable.setFilter((data)=>{
+      const blob = [
+        data.estado, data.medicamento, data.presentacion, data.lote, data.vencimiento,
+        String(data.cantidad), data.tipo, data.establecimiento, data.contactoEmail, data.observaciones
+      ].join(" ").toLowerCase();
+      return blob.includes(q);
+    });
+  });
+
+  async function loadOffers(){
+    const resp = await fetch("/.netlify/functions/api?action=list");
+    const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
+    if(!out.ok){
+      alert("Error al cargar: " + (out.error || "desconocido"));
+      return;
+    }
+    offersTable.setData(out.items || []);
+    $("last-updated").textContent = "actualizado: " + new Date().toLocaleString();
+    $("last-updated").className = "pill ok";
+  }
+
+  $("btn-refresh").addEventListener("click", loadOffers);
+
+  // ---------- Publish: read Excel ----------
+  let parsedRows = [];
+  let previewTable = new Tabulator("#preview-table", {
+    layout:"fitColumns",
+    height:"360px",
+    placeholder:"Sube un Excel para ver la vista previa.",
+    columns:[
+      {title:"Medicamento", field:"medicamento"},
+      {title:"Presentación", field:"presentacion"},
+      {title:"Lote", field:"lote", width:120},
+      {title:"Venc.", field:"vencimiento", width:110},
+      {title:"Cantidad", field:"cantidad", width:90, hozAlign:"right"},
+      {title:"Establecimiento", field:"establecimiento"},
+      {title:"Contacto", field:"contactoEmail"},
+      {title:"Tipo", field:"tipo", width:120},
+      {title:"Obs.", field:"observaciones"}
+    ]
+  });
+
+  $("site-key").addEventListener("input", ()=>{
+    const v = $("site-key").value.trim();
+    if(v) localStorage.setItem("siteKey", v);
+  });
+
+  // restore key for convenience (not secure, but practical for internal use)
+  const savedKey = localStorage.getItem("siteKey");
+  if(savedKey) $("site-key").value = savedKey;
+
+  $("file").addEventListener("change", async (e)=>{
+    $("publish-status").textContent = "";
+    parsedRows = [];
+    $("btn-publish").disabled = true;
+
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type:"array", cellDates:true });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { defval:"" });
+
+    const mapped = rows.map(r => ({
+      medicamento: normText(r.Medicamento),
+      presentacion: normText(r.Presentacion),
+      lote: normText(r.Lote),
+      vencimiento: isoDateFromAny(r.Vencimiento),
+      cantidad: Number(r.Cantidad || 0),
+      establecimiento: normText(r.Establecimiento),
+      contactoEmail: normText(r.ContactoEmail),
+      tipo: normText(r.Tipo || "Normal") || "Normal",
+      observaciones: normText(r.Observaciones || "")
+    }));
+
+    const valid = [];
+    const invalid = [];
+    for(const r of mapped){
+      const errs = validateRow(r);
+      if(errs.length) invalid.push({ r, errs });
+      else valid.push(r);
+    }
+
+    parsedRows = valid;
+    previewTable.setData(valid.slice(0, 200));
+    $("preview-hint").innerHTML = `
+      Filas válidas: <b>${valid.length}</b> · Filas rechazadas: <b>${invalid.length}</b>.
+      ${invalid.length ? " (Revisa formato de fecha y email.)" : ""}
+    `;
+
+    $("btn-publish").disabled = (valid.length === 0);
+  });
+
+  $("btn-clear").addEventListener("click", ()=>{
+    $("file").value = "";
+    parsedRows = [];
+    previewTable.clearData();
+    $("preview-hint").textContent = "";
+    $("publish-status").textContent = "";
+    $("btn-publish").disabled = true;
+  });
+
+  $("btn-publish").addEventListener("click", async ()=>{
+    const key = $("site-key").value.trim();
+    if(!key) return alert("Ingresa la Clave de publicación.");
+    if(!parsedRows.length) return alert("No hay filas válidas para publicar.");
+
+    $("btn-publish").disabled = true;
+    $("publish-status").textContent = "Publicando…";
+
+    // group by establecimiento (permite 1 archivo con varias comunas si alguien centraliza)
+    const groups = {};
+    for(const r of parsedRows){
+      const k = r.establecimiento;
+      if(!groups[k]) groups[k] = [];
+      groups[k].push(r);
+    }
+
+    let totalInserted = 0;
+    const batchId = String(Date.now());
+
+    for(const est of Object.keys(groups)){
+      const resp = await fetch("/.netlify/functions/api", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ siteKey:key, action:"upsertBatch", establecimiento: est, batchId, rows: groups[est] })
+      });
+      const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
+      if(!out.ok){
+        $("publish-status").textContent = "Error: " + (out.error || "desconocido");
+        $("btn-publish").disabled = false;
+        return;
+      }
+      totalInserted += (out.inserted || 0);
+    }
+
+    $("publish-status").innerHTML = `✅ Publicación lista. Filas insertadas: <b>${totalInserted}</b>.`;
+    $("btn-publish").disabled = false;
+
+    // refresh offers
+    await loadOffers();
+    // switch to view
+    document.querySelector('.tabbtn[data-tab="ver"]').click();
+  });
+
+  // ---------- Stats ----------
+  $("btn-stats").addEventListener("click", async ()=>{
+    const resp = await fetch("/.netlify/functions/api?action=stats");
+    const out = await resp.json().catch(()=>({ok:false, error:"Respuesta inválida"}));
+    if(!out.ok){
+      alert("Error stats: " + (out.error || "desconocido"));
+      return;
+    }
+    $("stats-updated").textContent = "actualizado: " + new Date().toLocaleString();
+    $("stats-updated").className = "pill ok";
+
+    const s = out.stats || {};
+    $("stats-box").innerHTML = `
+      <b>Ofertas activas (Disponible):</b> ${s.disponibles ?? "—"}<br/>
+      <b>Reservadas:</b> ${s.reservados ?? "—"}<br/>
+      <b>Cerradas:</b> ${s.cerrados ?? "—"}<br/><br/>
+      <b>Top establecimientos oferentes (por ofertas disponibles):</b><br/>
+      ${Array.isArray(s.topOferentes) && s.topOferentes.length ? s.topOferentes.map(x=>`• ${x.establecimiento}: ${x.count}`).join("<br/>") : "—"}
+    `;
+  });
+
+  // initial load
+  loadOffers();
+</script>
+
+</body>
+</html>
